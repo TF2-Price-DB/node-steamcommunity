@@ -25,6 +25,7 @@ SteamCommunity.prototype.httpRequest = function(uri, options, callback, source) 
 	// https://github.com/DoctorMcKay/node-steamcommunity/issues/351
 	if ((options.method || 'GET').toUpperCase() != 'GET') {
 		options.headers = options.headers || {};
+		options.headers['accept-language'] = 'en-US,en;q=0.9'; // donno why without this will get 429 indefinitely
 		if (!options.headers.origin) {
 			var parsedUrl = URL.parse(options.url);
 			options.headers.origin = parsedUrl.protocol + '//' + parsedUrl.host;
