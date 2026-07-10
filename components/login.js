@@ -1,5 +1,3 @@
-const {chrome} = require('@doctormckay/user-agents');
-
 const SteamCommunity = require('../index.js');
 
 /**
@@ -26,7 +24,7 @@ const SteamCommunity = require('../index.js');
  * @returns {Promise<LogOnResponse>}
  * @private
  */
-SteamCommunity.prototype._modernLogin = function(logOnDetails) {
+SteamCommunity.prototype._modernLogin = function (logOnDetails) {
 	return new Promise(async (resolve, reject) => {
 		if (!isNodeVersionNewEnough()) {
 			return reject(new Error(`Node.js version is too old! Need >=12.22.0 or later, got ${process.versions.node}.`));
@@ -37,7 +35,7 @@ SteamCommunity.prototype._modernLogin = function(logOnDetails) {
 		}
 
 		// Import this here so we don't cause problems on old Node versions if this code path isn't taken.
-		const {LoginSession, EAuthTokenPlatformType, EAuthSessionGuardType} = require('steam-session');
+		const { LoginSession, EAuthTokenPlatformType, EAuthSessionGuardType } = require('steam-session');
 
 		let session = new LoginSession(
 			logOnDetails.disableMobile
@@ -45,7 +43,7 @@ SteamCommunity.prototype._modernLogin = function(logOnDetails) {
 				: EAuthTokenPlatformType.MobileApp,
 			{
 				localAddress: this._options.localAddress,
-				userAgent: this._options.userAgent || chrome()
+				userAgent: this._options.userAgent || SteamCommunity.DEFAULT_USER_AGENT
 			}
 		);
 

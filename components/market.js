@@ -7,9 +7,14 @@ const Helpers = require('./helpers.js');
  * Get a list of all apps on the market
  * @param {function} callback - First argument is null|Error, second is an object of appid => name
  */
-SteamCommunity.prototype.getMarketApps = function(callback) {
+SteamCommunity.prototype.getMarketApps = function (callback) {
 	var self = this;
-	this.httpRequest('https://steamcommunity.com/market/', function (err, response, body) {
+	this.httpRequest({
+		"uri": 'https://steamcommunity.com/market/',
+		"headers": {
+			"accept": SteamCommunity.DEFAULT_DOCUMENT_ACCEPT
+		}
+	}, function (err, response, body) {
 		if (err) {
 			callback(err);
 			return;
@@ -38,7 +43,7 @@ SteamCommunity.prototype.getMarketApps = function(callback) {
  * @param {int|string} assetid
  * @param {function} callback
  */
-SteamCommunity.prototype.getGemValue = function(appid, assetid, callback) {
+SteamCommunity.prototype.getGemValue = function (appid, assetid, callback) {
 	this._myProfile({
 		"endpoint": "ajaxgetgoovalue/",
 		"qs": {
@@ -67,7 +72,7 @@ SteamCommunity.prototype.getGemValue = function(appid, assetid, callback) {
 			return;
 		}
 
-		callback(null, {"promptTitle": body.strTitle, "gemValue": parseInt(body.goo_value, 10)});
+		callback(null, { "promptTitle": body.strTitle, "gemValue": parseInt(body.goo_value, 10) });
 	});
 };
 
@@ -78,7 +83,7 @@ SteamCommunity.prototype.getGemValue = function(appid, assetid, callback) {
  * @param {int} expectedGemsValue
  * @param {function} callback
  */
-SteamCommunity.prototype.turnItemIntoGems = function(appid, assetid, expectedGemsValue, callback) {
+SteamCommunity.prototype.turnItemIntoGems = function (appid, assetid, expectedGemsValue, callback) {
 	this._myProfile({
 		"endpoint": "ajaxgrindintogoo/",
 		"json": true,
@@ -107,7 +112,7 @@ SteamCommunity.prototype.turnItemIntoGems = function(appid, assetid, expectedGem
 			return;
 		}
 
-		callback(null, {"gemsReceived": parseInt(body['goo_value_received '], 10), "totalGems": parseInt(body.goo_value_total, 10)});
+		callback(null, { "gemsReceived": parseInt(body['goo_value_received '], 10), "totalGems": parseInt(body.goo_value_total, 10) });
 	})
 };
 
@@ -117,7 +122,7 @@ SteamCommunity.prototype.turnItemIntoGems = function(appid, assetid, expectedGem
  * @param {int|string} assetid
  * @param {function} callback
  */
-SteamCommunity.prototype.openBoosterPack = function(appid, assetid, callback) {
+SteamCommunity.prototype.openBoosterPack = function (appid, assetid, callback) {
 	this._myProfile({
 		"endpoint": "ajaxunpackbooster/",
 		"json": true,
@@ -152,7 +157,7 @@ SteamCommunity.prototype.openBoosterPack = function(appid, assetid, callback) {
  * Get the booster pack catalog to see what booster packs you can create
  * @param {function} callback
  */
-SteamCommunity.prototype.getBoosterPackCatalog = function(callback) {
+SteamCommunity.prototype.getBoosterPackCatalog = function (callback) {
 	this.httpRequestGet('https://steamcommunity.com/tradingcards/boostercreator/', (err, res, body) => {
 		if (err) {
 			callback(err);
@@ -221,7 +226,7 @@ SteamCommunity.prototype.getBoosterPackCatalog = function(callback) {
  * @param {boolean} [useUntradableGems=false]
  * @param callback
  */
-SteamCommunity.prototype.createBoosterPack = function(appid, useUntradableGems, callback) {
+SteamCommunity.prototype.createBoosterPack = function (appid, useUntradableGems, callback) {
 	if (typeof useUntradableGems == 'function') {
 		callback = useUntradableGems;
 		useUntradableGems = false;
@@ -271,7 +276,7 @@ SteamCommunity.prototype.createBoosterPack = function(appid, useUntradableGems, 
  * @param {string} giftID
  * @param {function} callback
  */
-SteamCommunity.prototype.getGiftDetails = function(giftID, callback) {
+SteamCommunity.prototype.getGiftDetails = function (giftID, callback) {
 	this.httpRequestPost({
 		"uri": "https://steamcommunity.com/gifts/" + giftID + "/validateunpack",
 		"form": {
@@ -309,7 +314,7 @@ SteamCommunity.prototype.getGiftDetails = function(giftID, callback) {
  * @param {string} giftID
  * @param {function} callback
  */
-SteamCommunity.prototype.redeemGift = function(giftID, callback) {
+SteamCommunity.prototype.redeemGift = function (giftID, callback) {
 	this.httpRequestPost({
 		"uri": "https://steamcommunity.com/gifts/" + giftID + "/unpack",
 		"form": {
@@ -343,7 +348,7 @@ SteamCommunity.prototype.redeemGift = function(giftID, callback) {
  * @param {function} callback
  * @private
  */
-SteamCommunity.prototype._gemExchange = function(assetid, denominationIn, denominationOut, quantityIn, quantityOut, callback) {
+SteamCommunity.prototype._gemExchange = function (assetid, denominationIn, denominationOut, quantityIn, quantityOut, callback) {
 	this._myProfile({
 		endpoint: 'ajaxexchangegoo/',
 		json: true,
@@ -372,7 +377,7 @@ SteamCommunity.prototype._gemExchange = function(assetid, denominationIn, denomi
  * @param {int} desiredSackCount - How many sacks you want. You must have at least this amount * 1000 gems in the stack you're packing
  * @param {function} callback
  */
-SteamCommunity.prototype.packGemSacks = function(assetid, desiredSackCount, callback) {
+SteamCommunity.prototype.packGemSacks = function (assetid, desiredSackCount, callback) {
 	this._gemExchange(assetid, 1, 1000, desiredSackCount * 1000, desiredSackCount, callback);
 };
 
@@ -382,6 +387,6 @@ SteamCommunity.prototype.packGemSacks = function(assetid, desiredSackCount, call
  * @param {int} sacksToUnpack
  * @param {function} callback
  */
-SteamCommunity.prototype.unpackGemSacks = function(assetid, sacksToUnpack, callback) {
+SteamCommunity.prototype.unpackGemSacks = function (assetid, sacksToUnpack, callback) {
 	this._gemExchange(assetid, 1000, 1, sacksToUnpack, sacksToUnpack * 1000, callback);
 };

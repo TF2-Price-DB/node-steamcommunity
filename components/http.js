@@ -2,7 +2,7 @@ var URL = require('url');
 
 var SteamCommunity = require('../index.js');
 
-SteamCommunity.prototype.httpRequest = function(uri, options, callback, source) {
+SteamCommunity.prototype.httpRequest = function (uri, options, callback, source) {
 	if (typeof uri === 'object') {
 		source = callback;
 		callback = options;
@@ -22,6 +22,12 @@ SteamCommunity.prototype.httpRequest = function(uri, options, callback, source) 
 	}
 
 	options.headers = options.headers || {}; // set headers for all type of methods, not only GET
+	if (!options.headers['User-Agent'] && !options.headers['user-agent']) {
+		options.headers['User-Agent'] = this._userAgent || SteamCommunity.DEFAULT_USER_AGENT;
+	}
+	if (!options.json && (options.method || 'GET').toUpperCase() == 'GET' && !options.headers.accept && !options.headers.Accept) {
+		options.headers.accept = SteamCommunity.DEFAULT_DOCUMENT_ACCEPT;
+	}
 	options.headers['accept-language'] = 'en-US,en;q=0.9'; // donno why without this will get 429 indefinitely
 
 	// Add origin header if necessary
@@ -62,8 +68,8 @@ SteamCommunity.prototype.httpRequest = function(uri, options, callback, source) 
 		self.request(options, function (err, response, body) {
 			var hasCallback = !!callback;
 			var httpError = options.checkHttpError !== false && self._checkHttpError(err, response, callback, body);
-			var communityError = !options.json && options.checkCommunityError !== false && self._checkCommunityError(body, httpError ? function () {} : callback); // don't fire the callback if hasHttpError did it already
-			var tradeError = !options.json && options.checkTradeError !== false && self._checkTradeError(body, httpError || communityError ? function () {} : callback); // don't fire the callback if either of the previous already did
+			var communityError = !options.json && options.checkCommunityError !== false && self._checkCommunityError(body, httpError ? function () { } : callback); // don't fire the callback if hasHttpError did it already
+			var tradeError = !options.json && options.checkTradeError !== false && self._checkTradeError(body, httpError || communityError ? function () { } : callback); // don't fire the callback if either of the previous already did
 			var jsonError = options.json && options.checkJsonError !== false && !body ? new Error("Malformed JSON response") : null;
 
 			self.emit('postHttpRequest', requestID, source, options, httpError || communityError || tradeError || jsonError || null, response, body, {
@@ -85,21 +91,21 @@ SteamCommunity.prototype.httpRequest = function(uri, options, callback, source) 
 	}
 };
 
-SteamCommunity.prototype.httpRequestGet = function() {
+SteamCommunity.prototype.httpRequestGet = function () {
 	this._httpRequestConvenienceMethod = "GET";
 	return this.httpRequest.apply(this, arguments);
 };
 
-SteamCommunity.prototype.httpRequestPost = function() {
+SteamCommunity.prototype.httpRequestPost = function () {
 	this._httpRequestConvenienceMethod = "POST";
 	return this.httpRequest.apply(this, arguments);
 };
 
-SteamCommunity.prototype._notifySessionExpired = function(err) {
+SteamCommunity.prototype._notifySessionExpired = function (err) {
 	this.emit('sessionExpired', err);
 };
 
-SteamCommunity.prototype._checkHttpError = function(err, response, callback, body) {
+SteamCommunity.prototype._checkHttpError = function (err, response, callback, body) {
 	if (err) {
 		callback(err, response, body);
 		return err;
@@ -128,10 +134,10 @@ SteamCommunity.prototype._checkHttpError = function(err, response, callback, bod
 	return false;
 };
 
-SteamCommunity.prototype._checkCommunityError = function(html, callback) {
+SteamCommunity.prototype._checkCommunityError = function (html, callback) {
 	var err;
 
-	if(typeof html === 'string' && html.match(/<h1>Sorry!<\/h1>/)) {
+	if (typeof html === 'string' && html.match(/<h1>Sorry!<\/h1>/)) {
 		var match = html.match(/<h3>(.+)<\/h3>/);
 		err = new Error(match ? match[1] : "Unknown error occurred");
 		callback(err);
@@ -148,7 +154,7 @@ SteamCommunity.prototype._checkCommunityError = function(html, callback) {
 	return false;
 };
 
-SteamCommunity.prototype._checkTradeError = function(html, callback) {
+SteamCommunity.prototype._checkTradeError = function (html, callback) {
 	if (typeof html !== 'string') {
 		return false;
 	}
